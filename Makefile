@@ -17,6 +17,16 @@ build:
 upload:
 	avrdude -v -p $(DEVICE) -c $(PROGRAMMER) -B$(BIT) -b$(BAUD) -U flash:w:$(FILENAME).hex:i 
 
+
+build-debug:
+	$(COMPILE) -ggdb -c $(FILENAME).c -o $(FILENAME).o
+	$(COMPILE) -o $(FILENAME).elf $(FILENAME).o
+	avr-objcopy -j .text -j .data -O ihex $(FILENAME).elf $(FILENAME).hex
+	avr-size --format=avr --mcu=$(DEVICE) $(FILENAME).elf
+
+sim: build-debug
+	simavr -v -g -mcu $(DEVICE) -freq $(CLOCK) $(FILENAME).hex
+
 clean:
 	rm blink.o
 	rm blink.elf
