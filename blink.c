@@ -1,4 +1,5 @@
 #include <avr/io.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include<util/delay.h>
 #include<stdbool.h>
@@ -71,28 +72,47 @@ void col_draw(int n, uint8_t col){
 
 }
 
-//Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
-//Any live cell with two or three live neighbours lives on to the next generation.
-//Any live cell with more than three live neighbours dies, as if by overpopulation.
-//Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
 
 int get_cell(uint8_t* board, int x, int y){
-    return (board[y] >> ((n_cols - 1) -  x)) & 0x1;
+    return (board[y] >> ((8 - 1) -  x)) & 0x1;
+}
+int bit_count(uint8_t bits){
+
+    bits = (bits & 0b01010101) + ((bits & 0b10101010) >> 1);
+    bits = (bits & 0b00110011) + ((bits & 0b11001100) >> 2); 
+
+    return (bits & 0b00001111) + ((bits & 0b11110000) >> 4);
+
+
+
+}
+int get_row_count(uint8_t row, int x){
+    int shift = 6-x;
+    int mask = 0;
+    if(shift<=0){
+        mask = 0b11; 
+    }
+    else {
+        mask = 0b111 << shift;
+    }
+    return  bit_count(mask & row); 
 }
 
-int get_neighbors(uint8_t* board, int i, int j){
+int get_neighbors(uint8_t* board, int x, int y){
     int num_neighbors = 0;
-    num_neighbors += get_cell(board, i-1, j-1);
-    num_neighbors += get_cell(board, i  , j-1);
-    num_neighbors += get_cell(board, i+1, j-1);
 
-    num_neighbors += get_cell(board, i-1, j+1);
-    num_neighbors += get_cell(board, i  , j+1);
-    num_neighbors += get_cell(board, i+1, j+1);
+    num_neighbors += get_row_count(board[y], x);
 
-    num_neighbors += get_cell(board, i-1, j);
-    num_neighbors += get_cell(board, i+1, j);
-    return num_neighbors;
+    if(y-1 > 0){
+        num_neighbors += get_row_count(board[y-1], x);
+    }
+
+    if(y+1 < 8){
+        num_neighbors += get_row_count(board[y+1], x);
+    }
+    return num_neighbors - get_cell(board, x, y);
+
+
 }
 
 void cell_on(uint8_t* board, int x, int y){
@@ -109,7 +129,7 @@ void cell_off(uint8_t* board, int x, int y){
 void updateCells(uint8_t *board){
     uint8_t old_board[8];
     memcpy(old_board, board, sizeof(old_board));
-    int neighbors = 0;
+    int neighbors = 1;
     for(int i = 1; i < n_rows-1; i++){
         for(int j = 1; j < n_cols-1; j++){
             neighbors = get_neighbors(old_board, i, j);
