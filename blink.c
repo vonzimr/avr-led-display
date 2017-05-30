@@ -6,6 +6,8 @@
 #include<string.h>
 #define n_rows 8
 #define n_cols 8
+#define MAX_STAGNANT 5
+int stagnant_generations = 0;
 
 enum PORTS {D, C, B};
 int row_LEDs[n_rows][2] = {{C, PC0}, 
@@ -126,11 +128,32 @@ void cell_off(uint8_t* board, int x, int y){
     board[y] &= cell_mask;
 
 }
+void diff_board(uint8_t* a, uint8_t* b){
+    int diff = 0;
+    for(int i = 0; i < n_rows; i++){
+        diff += a[i] - b[i];
+
+    }
+    if(diff==0){
+        stagnant_generations++;
+    }
+}
+void randomize_board(uint8_t* board){
+    int shiftiness = 2;
+    for(int i = 0; i < 8; i++){
+        board[i] = rand() % 255;
+        board[i] = board[i] << rand() % shiftiness;
+
+    }
+
+    stagnant_generations = 0;
+
+}
 void updateCells(uint8_t *board){
     uint8_t old_board[8];
     memcpy(old_board, board, sizeof(old_board));
     int neighbors = 1;
-    for(int i = 1; i < n_rows-1; i++){
+    for(int i = 0; i < n_rows; i++){
         for(int j = 1; j < n_cols-1; j++){
             neighbors = get_neighbors(old_board, i, j);
             if(neighbors < 2 || neighbors > 3){
@@ -139,7 +162,14 @@ void updateCells(uint8_t *board){
             if(neighbors == 3){
                 cell_on(board, i, j);
             }
+            draw(old_board);
         }
+    }
+    diff_board(old_board, board);
+
+    if(stagnant_generations > MAX_STAGNANT){
+        randomize_board(board);
+
     }
 }
 int main(void){
@@ -159,7 +189,7 @@ int main(void){
     cell_on(board, 2, 2);
     int count = 0;
     while(1){
-        if(count == 100){
+        if(count == 10){
             updateCells(board);
             count = 0;
         }
