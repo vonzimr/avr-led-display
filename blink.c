@@ -139,7 +139,7 @@ int main(void){
     cell_on(board, 2, 2);
     int count = 0;
     while(1){
-        if(count == 1000){
+        if(count == 100){
             updateCells(board);
             count = 0;
         }
