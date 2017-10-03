@@ -29,9 +29,10 @@
 #define n_cols 8
 #define MAX_STAGNANT
 
-typedef uint8_t* disp_t;
+typedef uint8_t disp_t[8];
 
 void draw_row(uint8_t col, int index);
+void set_pins();
 
 void draw(disp_t board);
 
@@ -45,9 +46,6 @@ void cell_on(disp_t board, int x, int y);
 void cell_off(disp_t board, int x, int y);
 
 int diff_board(disp_t a, disp_t b);
-
-disp_t disp_new();
-void disp_free(disp_t disp);
 
 void screen_random_transition(disp_t disp);
 void screen_row_wipe(disp_t disp);

@@ -4,13 +4,14 @@
 #include<util/delay.h>
 #include<stdbool.h>
 #include<string.h>
-
 #include "conway.h"
 #include "display.h"
 
 int main(void){
-    disp_t board = disp_new();
+    set_pins();
+    disp_t board;
     while(1){
+        draw(board);
         new_generation(board);
     }
 }

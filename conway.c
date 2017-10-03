@@ -36,8 +36,9 @@ void randomize_board(disp_t board){
 }
 
 void new_generation(disp_t board){
-    disp_t old_board = disp_new();
-    memcpy(old_board, board, 8*sizeof(uint8_t));
+    disp_t old_board;
+
+    memcpy(old_board, board, sizeof(disp_t));
     int neighbors = 0;
     for(int i = 0; i < DIM; i++){
         for(int j = 0; j < DIM; j++){
@@ -62,5 +63,4 @@ void new_generation(disp_t board){
         randomize_board(board);
     }
     delay_draw(old_board,100);
-    disp_free(old_board);
 }
